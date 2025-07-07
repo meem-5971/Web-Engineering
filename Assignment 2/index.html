@@ -2,10 +2,10 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Shop With Me</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 
 <body>
@@ -34,13 +34,13 @@
       </div>
 
       <div class="search-area">
-        <input type="text" placeholder="Type your item" class="search_bar">
+        <input type="text" placeholder="Type your item" class="search_bar" />
         <button class="search">Search</button>
       </div>
     </div>
 
     <div class="right">
-      <i class="fas fa-shopping-cart"><sub>0</sub></i>
+      <i class="fas fa-shopping-cart" id="cartIcon"><sub>0</sub></i>
     </div>
   </nav>
 
@@ -50,41 +50,44 @@
 
   <section class="product-section">
     <div class="product-card" data-price="90" data-discount="0.1">
-      <img src="mango.jpg" alt="Product 1">
+      <img src="mango.jpg" alt="Mango" />
       <h3>Mango</h3>
       <p>
-        <span class="original-price">$90</span><br>
-        <span class="discount-info"></span><br>
+        <span class="original-price">$90</span><br />
+        <span class="discount-info"></span><br />
         <span class="discounted-price"></span>
       </p>
       <button class="add-to-cart">Add to Cart</button>
     </div>
+
     <div class="product-card" data-price="50" data-discount="0">
-      <img src="orange.jpg" alt="Product 2">
+      <img src="orange.jpg" alt="Orange" />
       <h3>Orange</h3>
       <p>
-        <span class="original-price">$50</span><br>
-        <span class="discount-info"></span><br>
+        <span class="original-price">$50</span><br />
+        <span class="discount-info"></span><br />
         <span class="discounted-price"></span>
       </p>
       <button class="add-to-cart">Add to Cart</button>
     </div>
+
     <div class="product-card" data-price="70" data-discount="0.05">
-      <img src="guava.jpeg" alt="Product 3">
+      <img src="guava.jpeg" alt="Guava" />
       <h3>Guava</h3>
       <p>
-        <span class="original-price">$70</span><br>
-        <span class="discount-info"></span><br>
+        <span class="original-price">$70</span><br />
+        <span class="discount-info"></span><br />
         <span class="discounted-price"></span>
       </p>
       <button class="add-to-cart">Add to Cart</button>
     </div>
+
     <div class="product-card" data-price="90" data-discount="0.15">
-      <img src="Watermelon.jpg" alt="Product 4">
+      <img src="Watermelon.jpg" alt="Watermelon" />
       <h3>Watermelon</h3>
       <p>
-        <span class="original-price">$90</span><br>
-        <span class="discount-info"></span><br>
+        <span class="original-price">$90</span><br />
+        <span class="discount-info"></span><br />
         <span class="discounted-price"></span>
       </p>
       <button class="add-to-cart">Add to Cart</button>
@@ -95,32 +98,114 @@
     <p>Thank you for watching</p>
   </footer>
 
-  <script>
-    let cartCount = 0;
-    const cartSub = document.querySelector('.fa-shopping-cart sub');
+  <div class="cart-sidebar" id="cartSidebar">
+    <button class="close-cart" aria-label="Close Cart Sidebar">&times;</button>
+    <h3>Your Cart</h3>
+    <div id="cartItems"></div>
+    <div class="cart-total">Total: $<span id="cartTotal">0</span></div>
+  </div>
 
-    document.querySelectorAll('.product-card').forEach(card => {
+  <!-- JavaScript -->
+  <script>
+    const cartSub = document.querySelector('.fa-shopping-cart sub');
+    const cartIcon = document.querySelector('.fa-shopping-cart');
+    const cartSidebar = document.getElementById('cartSidebar');
+    const cartItemsContainer = document.getElementById('cartItems');
+    const cartTotalDisplay = document.getElementById('cartTotal');
+    const closeBtn = document.querySelector('.close-cart');
+
+    let cart = [];
+    let cartCount = 0;
+
+    function updateCartSidebar() {
+      cartItemsContainer.innerHTML = '';
+      let total = 0;
+
+      cart.forEach((item) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'cart-item';
+        itemDiv.innerHTML = `
+          <div>
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-qty">
+              Qty: 
+              <button class="qty-btn decrease" data-name="${item.name}">-</button>
+              <span>${item.qty}</span>
+              <button class="qty-btn increase" data-name="${item.name}">+</button>
+            </div>
+          </div>
+          <div>$${item.qty * item.price}</div>
+        `;
+        cartItemsContainer.appendChild(itemDiv);
+        total += item.qty * item.price;
+
+        itemDiv.querySelector('.increase').addEventListener('click', () => {
+          changeQty(item.name, 1);
+        });
+        itemDiv.querySelector('.decrease').addEventListener('click', () => {
+          changeQty(item.name, -1);
+        });
+      });
+
+      cartTotalDisplay.textContent = total.toFixed(2);
+    }
+
+    function changeQty(name, delta) {
+      const item = cart.find((i) => i.name === name);
+      if (!item) return;
+
+      item.qty += delta;
+      if (item.qty <= 0) {
+        cart = cart.filter((i) => i.name !== name);
+      }
+
+      cartCount = cart.reduce((acc, cur) => acc + cur.qty, 0);
+      cartSub.textContent = cartCount;
+
+      updateCartSidebar();
+    }
+
+    cartIcon.addEventListener('click', () => {
+      cartSidebar.classList.add('open');
+    });
+
+    closeBtn.addEventListener('click', () => {
+      cartSidebar.classList.remove('open');
+    });
+
+    document.querySelectorAll('.product-card').forEach((card) => {
       const price = parseFloat(card.dataset.price);
       const discount = parseFloat(card.dataset.discount);
+      const name = card.querySelector('h3').textContent;
+
       const originalElem = card.querySelector('.original-price');
       const discountInfo = card.querySelector('.discount-info');
       const discountedElem = card.querySelector('.discounted-price');
 
+      let finalPrice = price;
+
       if (discount > 0) {
         const discountPercent = Math.round(discount * 100);
-        const discountedPrice = Math.round(price * (1 - discount));
+        finalPrice = Math.round(price * (1 - discount));
         discountInfo.textContent = `Discount: ${discountPercent}% OFF`;
-        discountedElem.textContent = `Now: $${discountedPrice}`;
-        originalElem.style.textDecoration = "line-through";
-        originalElem.style.color = "#888";
-        discountedElem.style.color = "#e67e22";
-        discountedElem.style.fontWeight = "bold";
+        discountedElem.textContent = `Now: $${finalPrice}`;
+        originalElem.style.textDecoration = 'line-through';
+        originalElem.style.color = '#888';
+        discountedElem.style.color = '#e67e22';
+        discountedElem.style.fontWeight = 'bold';
       }
 
       const addBtn = card.querySelector('.add-to-cart');
       addBtn.addEventListener('click', () => {
+        const existing = cart.find((item) => item.name === name);
+        if (existing) {
+          existing.qty += 1;
+        } else {
+          cart.push({ name, price: finalPrice, qty: 1 });
+        }
         cartCount++;
         cartSub.textContent = cartCount;
+        updateCartSidebar();
       });
     });
   </script>
